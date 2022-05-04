@@ -1,12 +1,19 @@
 interface Veiculo {
   nome: string,
   placa: string,
-  entrada: Date,
+  entrada: Date | string,
 }
 
 (function() {
 
   const $ = (query: string): HTMLInputElement | null => document.querySelector(query);
+
+  function calcTempo(milisegundos: number){
+    const minutos = Math.floor(milisegundos / 60000);
+    const segundos = Math.floor((milisegundos % 60000) / 1000);
+
+    return `${minutos}m e ${segundos}s`;
+  }
 
   function patio(){
     
@@ -28,6 +35,10 @@ interface Veiculo {
         <td><button class="delete" data-placa="${veiculo.placa}">X</button></td>
       `;
 
+      row.querySelector(".delete")?.addEventListener("click", function(){
+        remover(this.dataset.placa);
+      });
+
       $("#patio")?.appendChild(row);
 
       if(save){
@@ -35,8 +46,17 @@ interface Veiculo {
       }
     }
     
-    function remover(){
+    function remover(placa: string){
+      const { nome, entrada } = ler().find(veiculo => veiculo.placa === placa);
 
+      const tempo = calcTempo(new Date().getTime() - new Date(entrada).getTime() );
+
+      if(!confirm(`O veiculo ${nome} permaneceu por ${tempo}.\n\nDeseja encerrar?`)){
+        return
+      }else{
+        salvar(ler().filter((veiculo) => veiculo.placa !== placa));
+        render();
+      }
     }
 
     function render(){
@@ -46,7 +66,6 @@ interface Veiculo {
       if(patio.length){
         patio.forEach((veiculo) => adicionar(veiculo));
       }
-
     }
 
     return { ler, adicionar, salvar, remover, render };
@@ -64,7 +83,7 @@ interface Veiculo {
       return;
     }
 
-    patio().adicionar({ nome, placa, entrada: new Date() }, true);
+    patio().adicionar({ nome, placa, entrada: new Date().toISOString() }, true);
   
   });
 
