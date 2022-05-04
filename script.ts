@@ -10,7 +10,7 @@ interface Veiculo {
 
   function patio(){
     
-    function ler(){
+    function ler(): Veiculo[] {
       return localStorage.patio ? JSON.parse(localStorage.patio) : [];
     }
 
@@ -18,7 +18,7 @@ interface Veiculo {
       localStorage.setItem("patio", JSON.stringify(veiculos));
     }
 
-    function adicionar(veiculo: Veiculo){
+    function adicionar(veiculo: Veiculo, save?: boolean){
       const row = document.createElement('tr');
 
       row.innerHTML = `
@@ -30,8 +30,9 @@ interface Veiculo {
 
       $("#patio")?.appendChild(row);
 
-      salvar([...ler(), veiculo]);
-
+      if(save){
+        salvar([...ler(), veiculo]);
+      }
     }
     
     function remover(){
@@ -39,11 +40,19 @@ interface Veiculo {
     }
 
     function render(){
+      $("#patio")!.innerHTML = '';
+      const patio = ler();
+
+      if(patio.length){
+        patio.forEach((veiculo) => adicionar(veiculo));
+      }
 
     }
 
     return { ler, adicionar, salvar, remover, render };
   }
+
+  patio().render();
 
   $("#cadastrar")?.addEventListener("click", () => {
     const nome = $("#nome")?.value;
@@ -55,7 +64,7 @@ interface Veiculo {
       return;
     }
 
-    patio().adicionar({ nome, placa, entrada: new Date() });
+    patio().adicionar({ nome, placa, entrada: new Date() }, true);
   
   });
 
